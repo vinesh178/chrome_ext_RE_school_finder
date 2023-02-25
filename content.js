@@ -6,9 +6,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const address = addressElement.textContent;
 
     chrome.runtime.sendMessage({ type: "getAddress", address }, (response) => {
-      // const school = response.school
-
-      sendResponse({ school: response });
+      sendResponse({ school: response.school });
       return true;
     });
   }
