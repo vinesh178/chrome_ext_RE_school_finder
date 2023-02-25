@@ -11,13 +11,8 @@
   ],
   "background": {
     "service_worker": "background.js"
+  
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["config.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
 
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "action": {
