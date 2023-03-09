@@ -1,5 +1,3 @@
-chrome.runtime.onInstalled.addListener(() => {
-
 
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === "getAddress") {
@@ -41,4 +39,4 @@ chrome.runtime.onInstalled.addListener(() => {
       return true;
     }
   });
-});
+
