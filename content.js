@@ -1,6 +1,8 @@
-document.addEventListener("DOMContentLoaded", function() {
+
  
   const sel = document.querySelector("body > script:nth-child(2)");
+
+  console.log(`sel ${sel}`);
 
 const property_details = sel.textContent.split("=").slice(1).join("=");
 
@@ -13,8 +15,12 @@ const marketing_price_range1 = property_details.indexOf("marketing_price_range")
 const lat = property_details.substring(latitude, latitude + 25).replace(/[\/\\,]/g, "").split(":")[1].replace(",","")
 const long = property_details.substring(longitude, longitude + 26).replace(/[\/\\,]/g, "").split(":")[1].replace(",","")
 
+console.log(`lat ${lat} long ${long}`);
+
 
 const marketing_price_range = property_details.substring(marketing_price_range1, marketing_price_range1 + 57).replace(/[\/\\,]/g, '').split(":")[1].replace(/"/g,"")
+
+console.log(marketing_price_range);
 
 
 const [min, max] = marketing_price_range.split("_");
@@ -34,9 +40,6 @@ chrome.runtime.sendMessage({ type: "getAddress", lat: lat, long: long }, (respon
 
 });
 
-
-
-});
 
 
 
