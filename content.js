@@ -1,8 +1,4 @@
-
- 
-  const sel = document.querySelector("body > script:nth-child(2)");
-
-  console.log(`sel ${sel}`);
+const sel = document.querySelector("body > script:nth-child(2)");
 
 const property_details = sel.textContent.split("=").slice(1).join("=");
 

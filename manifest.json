@@ -15,9 +15,8 @@
   
   },
 
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "permissions": ["activeTab", "tabs"],
   "action": {
-    "default_popup": "re_school_finder.html",
     "default_icon": "icons8-asset-64.png"
   }
 }
