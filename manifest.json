@@ -6,17 +6,15 @@
   "content_scripts": [
     {
       "matches": ["https://*.realestate.com.au/*"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "css": ["style.css"]
     }
   ],
   "background": {
     "service_worker": "background.js"
   
   },
-
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "action": {
-    "default_popup": "re_school_finder.html",
     "default_icon": "icons8-asset-64.png"
   }
 }
