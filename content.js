@@ -24,6 +24,7 @@ const [min, max] = marketing_price_range.split("_");
 
 const mpr = `${min} to ${max}`;
 
+
 chrome.runtime.sendMessage({ type: "getAddress", lat: lat, long: long }, (response) => {
   const div = document.querySelector("#argonaut-wrapper > div.details > div.details__wrapper > div.details__hero > div > div > div.hero-poster__pip > div > div.property-info__header")
 
@@ -31,8 +32,9 @@ chrome.runtime.sendMessage({ type: "getAddress", lat: lat, long: long }, (respon
 
   const finalDiv = div ? div : div2
 
+  const schoolString = response.school ? `${response.school} - ${mpr}` : `${mpr}`;
   finalDiv.id = 'school-name';
-  finalDiv.append(`${response.school} - ${mpr}`)
+  finalDiv.append(schoolString);
 
 });
 
