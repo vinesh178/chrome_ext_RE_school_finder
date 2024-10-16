@@ -1,4 +1,4 @@
-const sel = document.querySelector("body > script:nth-child(2)");
+const sel = document.querySelector("body > script");
 
 const property_details = sel.textContent.split("=").slice(1).join("=");
 

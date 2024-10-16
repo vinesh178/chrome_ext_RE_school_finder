@@ -16,5 +16,13 @@
   },
   "action": {
     "default_icon": "icons8-asset-64.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/turf.min.js","catchments_primary.geojson","schooldata.json"],
+      "matches": ["https://*.realestate.com.au/*"]
+    }
+  ]
+
+
 }

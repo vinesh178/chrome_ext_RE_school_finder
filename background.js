@@ -1,24 +1,94 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === "getAddress") {
-    const lat = request.lat;
-    const long = request.long;
+importScripts('lib/turf.min.js');
 
-    // send query to school finder
-    const schoolfinderurl = `https://cesensw.cartodb.com/api/v2/sql?q=SELECT s.*, b.cartodb_id, b.calendar_year, b.catchment_level, b.priority,
-                         b.school_type, b.shape_area, b.kindergarten, b.year1, b.year2, b.year3, b.year4, b.year5, b.year6, b.year7, b.year8, b.year9, b.year10, b.year11, b.year12, ST_DISTANCE(s.the_geom::geography,
-                         ST_SetSRID(ST_Point(${long},${lat}),4326)::geography) AS dist FROM dec_schools_2020 AS s JOIN catchments_2020 AS b ON
-                         s.school_code = b.school_code WHERE (ST_CONTAINS(b.the_geom, ST_SetSRID(ST_Point(${long},${lat}),4326)) AND (catchment_level IN ('primary','infants'))) ORDER BY dist ASC `;
-    fetch(schoolfinderurl)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.rows.length === 0) {
-          return "";
-        } else {
-          return data.rows[0].school_name;
+let geojsonData;
+let schooldata;
+
+fetch(chrome.runtime.getURL('catchments_primary.geojson'))
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-      })
-      .then((school) => sendResponse({ school }));
+        return response.json();
+    })
+    .then(data => {
+        geojsonData = data; // Store the fetched GeoJSON data
+        console.log('GeoJSON data loaded:', geojsonData);
+    })
+    .catch(error => {
+        console.error('Error fetching GeoJSON data:', error);
+    });
 
-    return true;
-  }
+fetch(chrome.runtime.getURL('schooldata.json'))
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        schooldata = data; // Store the fetched GeoJSON data
+        console.log('School data loaded:', schooldata);
+    })
+    .catch(error => {
+        console.error('Error fetching School data:', error);
+    });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === "getAddress") {
+        const pointToCheck = [request.long, request.lat];
+
+        loadGeoJSONAndCheckPoint(geojsonData, pointToCheck)
+            .then(school => {
+                sendResponse({ school });
+            })
+            .catch(error => {
+                console.error('Error checking point:', error);
+                sendResponse({ school: "" }); // Return null on error
+            });
+
+        return true; // Keep the message channel open for async response
+    }
 });
+
+// Function to check if a point is inside any catchment polygon
+function checkPointInCatchment(point, geojson) {
+    const turfPoint = turf.point(point);
+
+    for (let feature of geojson.features) {
+        const polygon = feature.geometry;
+        const useDesc = feature.properties.USE_ID;
+
+        const isInside = turf.booleanPointInPolygon(turfPoint, polygon);
+
+        if (isInside) {
+            return useDesc;  // Return USE_DESC if the point is inside
+        }
+    }
+
+    return null;  // Return null if the point is not inside any polygon
+}
+
+async function loadGeoJSONAndCheckPoint(geojsonData, pointToCheck) {
+    const result = checkPointInCatchment(pointToCheck, geojsonData);
+
+    if (result) {
+        console.log(`The point is inside the catchment. USE_ID: ${result}`);
+        
+        // Now look for the corresponding school in schooldata
+        const school = schooldata.find(s => s.School_code === result);
+        if (school) {
+            return school.School_name; // Return the school name
+        } else {
+            console.log("School not found for the given USE_ID.");
+            return null; // or return an appropriate message if needed
+        }
+    } else {
+        console.log("The point is not inside any catchment.");
+        return null; // Return null if not inside any catchment
+    }
+}
+
+
+
+
+
