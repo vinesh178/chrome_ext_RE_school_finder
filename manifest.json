@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "RE_School_Finder",
   "description": "Find primary school in catchment of RE address",
-  "version": "1.1",
+  "version": "1.2",
   "content_scripts": [
     {
       "matches": ["https://*.realestate.com.au/*"],
@@ -12,17 +12,18 @@
   ],
   "background": {
     "service_worker": "background.js"
-  
   },
   "action": {
     "default_icon": "icons8-asset-64.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["lib/turf.min.js","catchments_primary.geojson","schooldata.json"],
+      "resources": [
+        "lib/turf.min.js",
+        "catchments_primary.geojson",
+        "schooldata.json"
+      ],
       "matches": ["https://*.realestate.com.au/*"]
     }
   ]
-
-
 }
