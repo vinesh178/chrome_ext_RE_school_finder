@@ -2,35 +2,33 @@ importScripts('lib/turf.min.js');
 
 let geojsonData;
 let schooldata;
+const schoolcodeToSchoolName = new Map();
 
-fetch(chrome.runtime.getURL('catchments_primary.geojson'))
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        geojsonData = data; // Store the fetched GeoJSON data
-        console.log('GeoJSON data loaded:', geojsonData);
+async function loadGeoJSON() {
+    const response = await fetch(chrome.runtime.getURL('catchments_primary.geojson'));
+    if (!response.ok) {
+        throw new Error('Failed to load GeoJSON data');
+    }
+    geojsonData = await response.json(); // Cache GeoJSON data
+    console.log('GeoJSON data loaded:', geojsonData);
+}
+
+async function loadSchoolData() {
+    const response = await fetch(chrome.runtime.getURL('schooldata.json'));
+    if (!response.ok) {
+        throw new Error('Failed to load school data');
+    }
+    schooldata = await response.json(); // Cache school data
+    console.log('School data loaded:', schooldata);
+}
+
+// Load both datasets and wait for them to finish
+Promise.all([loadGeoJSON(), loadSchoolData()])
+    .then(() => {
+        console.log('Both datasets loaded successfully');
     })
     .catch(error => {
-        console.error('Error fetching GeoJSON data:', error);
-    });
-
-fetch(chrome.runtime.getURL('schooldata.json'))
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        schooldata = data; // Store the fetched GeoJSON data
-        console.log('School data loaded:', schooldata);
-    })
-    .catch(error => {
-        console.error('Error fetching School data:', error);
+        console.error('Error loading datasets:', error);
     });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -70,13 +68,22 @@ function checkPointInCatchment(point, geojson) {
 
 async function loadGeoJSONAndCheckPoint(geojsonData, pointToCheck) {
     const result = checkPointInCatchment(pointToCheck, geojsonData);
-
+    
     if (result) {
         console.log(`The point is inside the catchment. USE_ID: ${result}`);
-        
+
+        // Check if the school name is already cached
+        if (schoolcodeToSchoolName.has(result)) {
+            console.log("Returning cached school name:", schoolcodeToSchoolName.get(result));
+            return schoolcodeToSchoolName.get(result); // Return cached school name
+        }
+
         // Now look for the corresponding school in schooldata
         const school = schooldata.find(s => s.School_code === result);
         if (school) {
+            // Cache the school name
+            console.log(`Setting cached school code: ${result} with name: ${school.School_name}`);
+            schoolcodeToSchoolName.set(result, school.School_name);
             return school.School_name; // Return the school name
         } else {
             console.log("School not found for the given USE_ID.");
@@ -87,8 +94,6 @@ async function loadGeoJSONAndCheckPoint(geojsonData, pointToCheck) {
         return null; // Return null if not inside any catchment
     }
 }
-
-
 
 
 
